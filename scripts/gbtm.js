@@ -75,53 +75,34 @@ Hooks.once("init", () => {
 });
 
 Hooks.on("getSceneControlButtons", (controls) => {
-  const tokenControls = getSceneControls(controls, "tokens");
-  const tileControls = getSceneControls(controls, "tiles");
-
-  if (tokenControls) {
-    addTool(tokenControls, {
+  if (controls.tokens) {
+    controls.tokens.tools["gbtm-toggle-setpieces"] = {
       name: "gbtm-toggle-setpieces",
       title: "GBTM: Setpiece-Leiste öffnen/schließen",
       icon: "fa-solid fa-images",
+      order: Object.keys(controls.tokens.tools).length,
       button: true,
       visible: game.user.isGM,
       onChange: (_event, active) => toggleSetpieceBar(active)
-    });
+    };
   }
 
-  if (tileControls) {
-    addTool(tileControls, {
+  if (controls.tiles) {
+    controls.tiles.tools["gbtm-create-setpiece-slot"] = {
       name: "gbtm-create-setpiece-slot",
       title: "GBTM: Setpiece-Slot aus ausgewählter Tile anlegen",
       icon: "fa-solid fa-square-plus",
+      order: Object.keys(controls.tiles.tools).length,
       button: true,
       visible: game.user.isGM,
       onChange: () => createSetpieceFromControlledTile()
-    });
+    };
   }
 });
 
 Hooks.on("updateScene", (scene) => {
   if (scene.id === canvas.scene?.id && setpieceBar?.rendered) setpieceBar.render({ force: true });
 });
-
-function getSceneControls(controls, name) {
-  if (Array.isArray(controls)) return controls.find((control) => control.name === name);
-  return controls?.[name];
-}
-
-function addTool(control, tool) {
-  if (Array.isArray(control.tools)) {
-    control.tools.push(tool);
-    return;
-  }
-
-  control.tools ??= {};
-  control.tools[tool.name] = {
-    ...tool,
-    order: Object.keys(control.tools).length + 1
-  };
-}
 
 function toggleSetpieceBar(active) {
   if (!setpieceBar) setpieceBar = new GBTMSetpieceBar();
