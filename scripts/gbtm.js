@@ -48,6 +48,7 @@ class GBTMSetpieceBar extends foundry.applications.api.HandlebarsApplicationMixi
     this.element.querySelectorAll(".gbtm-setpiece").forEach((button) => {
       button.addEventListener("click", () => this.constructor.#chooseSetpiece.call(this, null, button));
     });
+    this.element.querySelector(".gbtm-clear-setpieces")?.addEventListener("click", () => clearSetpieces());
   }
 
   static async #chooseSetpiece(event, target) {
@@ -117,6 +118,15 @@ async function createSetpieceFromControlledTile() {
 
   const document = tile.document;
   const setpieces = getSetpieces();
+  const existingIndex = setpieces.findIndex((setpiece) => setpiece.tileId === document.id || setpiece.tileUuid === document.uuid);
+  if (existingIndex >= 0) {
+    const [removedSetpiece] = setpieces.splice(existingIndex, 1);
+    await canvas.scene.setFlag(MODULE_ID, FLAG_SETPIECES, setpieces);
+    ui.notifications.info(`Setpiece entfernt: ${removedSetpiece.name || document.name || document.id}`);
+    if (setpieceBar?.rendered) setpieceBar.render({ force: true });
+    return;
+  }
+
   const src = document.texture?.src || "";
   setpieces.push({
     tileId: document.id,
@@ -134,6 +144,12 @@ async function createSetpieceFromControlledTile() {
 
 function getSetpieces() {
   return foundry.utils.deepClone(canvas.scene?.getFlag(MODULE_ID, FLAG_SETPIECES) ?? []);
+}
+
+async function clearSetpieces() {
+  await canvas.scene.setFlag(MODULE_ID, FLAG_SETPIECES, []);
+  ui.notifications.info("Setpiece-Liste geleert.");
+  if (setpieceBar?.rendered) setpieceBar.render({ force: true });
 }
 
 async function updateSetpiecePath(index, path) {
