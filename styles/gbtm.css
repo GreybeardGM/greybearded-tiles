@@ -1,0 +1,74 @@
+.gbtm-setpiece-app {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  min-width: 320px;
+  max-width: min(80vw, 960px);
+  pointer-events: auto;
+}
+
+.gbtm-setpiece-app .window-header {
+  display: none;
+}
+
+.gbtm-setpiece-app .window-content {
+  padding: 6px;
+  background: rgba(20, 20, 20, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0 0 8px 8px;
+  backdrop-filter: blur(4px);
+}
+
+.gbtm-setpiece-list {
+  display: flex;
+  flex-flow: row nowrap;
+  gap: 6px;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.gbtm-setpiece {
+  flex: 0 0 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: stretch;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--color-text-light-highlight, #f0f0e0);
+  cursor: pointer;
+}
+
+.gbtm-setpiece:hover,
+.gbtm-setpiece:focus-visible {
+  border-color: var(--color-border-highlight, #ff6400);
+  box-shadow: 0 0 6px var(--color-shadow-highlight, #ff6400);
+}
+
+.gbtm-setpiece img {
+  width: 86px;
+  height: 54px;
+  object-fit: cover;
+  border: 0;
+  border-radius: 4px;
+}
+
+.gbtm-setpiece span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.gbtm-empty {
+  margin: 0;
+  padding: 4px 8px;
+  color: var(--color-text-light-highlight, #f0f0e0);
+  font-size: 12px;
+}
