@@ -1,0 +1,14 @@
+<section class="gbtm-setpiece-bar" aria-label="Greybeared Theater of the Mind Setpieces">
+  {{#if setpieces.length}}
+    <div class="gbtm-setpiece-list">
+      {{#each setpieces}}
+        <button type="button" class="gbtm-setpiece" data-index="{{@index}}" title="{{this.name}}">
+          <img src="{{this.src}}" alt="{{this.name}}" loading="lazy">
+          <span>{{this.name}}</span>
+        </button>
+      {{/each}}
+    </div>
+  {{else}}
+    <p class="gbtm-empty">Keine Setpieces gespeichert. Wähle eine Tile aus und nutze „Setpiece-Slot anlegen“.</p>
+  {{/if}}
+</section>

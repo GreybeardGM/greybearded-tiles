@@ -1,0 +1,23 @@
+{
+  "id": "greybeared-tiles",
+  "title": "Greybeared Theater of the Mind",
+  "description": "Scene controls for managing Theater of the Mind tile setpieces from a centered thumbnail flex bar.",
+  "version": "0.1.0",
+  "authors": [
+    {
+      "name": "GreybeardGM"
+    }
+  ],
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "esmodules": [
+    "scripts/gbtm.js"
+  ],
+  "styles": [
+    "styles/gbtm.css"
+  ],
+  "license": "LICENSE",
+  "readme": "README.md"
+}
