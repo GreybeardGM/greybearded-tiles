@@ -3,8 +3,6 @@
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: min(92vw, 1120px);
-  min-width: min(92vw, 480px);
   max-width: 1120px;
   pointer-events: auto;
 }
@@ -15,15 +13,6 @@
 
 .gbtm-setpiece-app .window-content {
   padding: 6px 8px;
-  background: rgba(20, 20, 20, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 0 0 8px 8px;
-  backdrop-filter: blur(4px);
-  overflow: hidden;
-}
-
-.gbtm-setpiece-bar {
-  margin: 0;
 }
 
 .gbtm-setpiece-actions {
@@ -33,17 +22,9 @@
 }
 
 .gbtm-clear-setpieces {
-  display: inline-flex;
-  gap: 4px;
-  align-items: center;
-  padding: 2px 6px;
   border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.35);
   color: var(--color-text-light-highlight, #f0f0e0);
   font-size: 11px;
-  line-height: 1;
-  cursor: pointer;
 }
 
 .gbtm-clear-setpieces:hover,
@@ -62,16 +43,13 @@
 
 .gbtm-setpiece {
   flex: 0 0 128px;
-  display: flex;
   flex-direction: column;
   gap: 3px;
-  align-items: stretch;
   padding: 4px;
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 6px;
-  background: rgba(0, 0, 0, 0.35);
   color: var(--color-text-light-highlight, #f0f0e0);
-  cursor: pointer;
+  height: auto;
 }
 
 .gbtm-setpiece:hover,
@@ -84,7 +62,6 @@
   width: 118px;
   height: 74px;
   object-fit: cover;
-  border: 0;
   border-radius: 4px;
 }
 
