@@ -19,5 +19,8 @@
     "styles/gbtm.css"
   ],
   "license": "LICENSE",
-  "readme": "README.md"
+  "readme": "README.md",
+  "url": "https://github.com/GreybeardGM/greybearded-tiles",
+  "manifest": "https://raw.githubusercontent.com/GreybeardGM/greybearded-tiles/main/module.json",
+  "download": "https://github.com/GreybeardGM/greybearded-tiles/archive/refs/heads/main.zip"
 }
