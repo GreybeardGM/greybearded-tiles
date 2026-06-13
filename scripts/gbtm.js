@@ -75,29 +75,27 @@ Hooks.once("init", () => {
 });
 
 Hooks.on("getSceneControlButtons", (controls) => {
-  if (controls.tokens) {
-    controls.tokens.tools["gbtm-toggle-setpieces"] = {
-      name: "gbtm-toggle-setpieces",
-      title: "GBTM: Setpiece-Leiste öffnen/schließen",
-      icon: "fa-solid fa-images",
-      order: Object.keys(controls.tokens.tools).length,
-      button: true,
-      visible: game.user.isGM,
-      onChange: (_event, active) => toggleSetpieceBar(active)
-    };
-  }
+  const tokenTools = controls.tokens.tools;
+  tokenTools.gbtmToggleSetpieces = {
+    name: "gbtmToggleSetpieces",
+    title: "GBTM: Setpiece-Leiste öffnen/schließen",
+    icon: "fa-solid fa-images",
+    order: Object.keys(tokenTools).length + 1,
+    button: true,
+    visible: game.user.isGM,
+    onChange: () => toggleSetpieceBar()
+  };
 
-  if (controls.tiles) {
-    controls.tiles.tools["gbtm-create-setpiece-slot"] = {
-      name: "gbtm-create-setpiece-slot",
-      title: "GBTM: Setpiece-Slot aus ausgewählter Tile anlegen",
-      icon: "fa-solid fa-square-plus",
-      order: Object.keys(controls.tiles.tools).length,
-      button: true,
-      visible: game.user.isGM,
-      onChange: () => createSetpieceFromControlledTile()
-    };
-  }
+  const tileTools = controls.tiles.tools;
+  tileTools.gbtmCreateSetpieceSlot = {
+    name: "gbtmCreateSetpieceSlot",
+    title: "GBTM: Setpiece-Slot aus ausgewählter Tile anlegen",
+    icon: "fa-solid fa-square-plus",
+    order: Object.keys(tileTools).length + 1,
+    button: true,
+    visible: game.user.isGM,
+    onChange: () => createSetpieceFromControlledTile()
+  };
 });
 
 Hooks.on("updateScene", (scene) => {
