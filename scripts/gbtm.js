@@ -74,30 +74,40 @@ Hooks.once("init", () => {
   console.log(`${MODULE_ID} | Initializing Greybeared Theater of the Mind`);
 });
 
+function registerSceneControlTools(control, tools) {
+  if (!control || typeof control.tools !== "object" || Array.isArray(control.tools)) return;
+
+  const baseOrder = Object.keys(control.tools).length;
+  tools.forEach((tool, index) => {
+    control.tools[tool.name] = {
+      ...tool,
+      order: baseOrder + index + 1
+    };
+  });
+}
+
 Hooks.on("getSceneControlButtons", (controls) => {
-  if (controls.tokens) {
-    controls.tokens.tools["gbtm-toggle-setpieces"] = {
-      name: "gbtm-toggle-setpieces",
+  registerSceneControlTools(controls?.tokens, [
+    {
+      name: "gbtmToggleSetpieces",
       title: "GBTM: Setpiece-Leiste öffnen/schließen",
       icon: "fa-solid fa-images",
-      order: Object.keys(controls.tokens.tools).length,
       button: true,
       visible: game.user.isGM,
-      onChange: (_event, active) => toggleSetpieceBar(active)
-    };
-  }
+      onChange: () => toggleSetpieceBar()
+    }
+  ]);
 
-  if (controls.tiles) {
-    controls.tiles.tools["gbtm-create-setpiece-slot"] = {
-      name: "gbtm-create-setpiece-slot",
+  registerSceneControlTools(controls?.tiles, [
+    {
+      name: "gbtmCreateSetpieceSlot",
       title: "GBTM: Setpiece-Slot aus ausgewählter Tile anlegen",
       icon: "fa-solid fa-square-plus",
-      order: Object.keys(controls.tiles.tools).length,
       button: true,
       visible: game.user.isGM,
       onChange: () => createSetpieceFromControlledTile()
-    };
-  }
+    }
+  ]);
 });
 
 Hooks.on("updateScene", (scene) => {
