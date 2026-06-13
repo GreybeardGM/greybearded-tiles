@@ -48,6 +48,7 @@ class GBTMSetpieceBar extends foundry.applications.api.HandlebarsApplicationMixi
     this.element.querySelectorAll(".gbtm-setpiece").forEach((button) => {
       button.addEventListener("click", () => this.constructor.#chooseSetpiece.call(this, null, button));
     });
+    this.element.querySelector(".gbtm-close-setpieces")?.addEventListener("click", () => this.close());
     this.element.querySelector(".gbtm-clear-setpieces")?.addEventListener("click", () => clearSetpieces());
   }
 
