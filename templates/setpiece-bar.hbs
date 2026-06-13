@@ -1,5 +1,11 @@
 <section class="gbtm-setpiece-bar" aria-label="Greybeared Theater of the Mind Setpieces">
   {{#if setpieces.length}}
+    <div class="gbtm-setpiece-actions">
+      <button type="button" class="gbtm-clear-setpieces" title="Alle Setpieces aus dieser Szene entfernen">
+        <i class="fa-solid fa-trash" aria-hidden="true"></i>
+        <span>Liste leeren</span>
+      </button>
+    </div>
     <div class="gbtm-setpiece-list">
       {{#each setpieces}}
         <button type="button" class="gbtm-setpiece" data-index="{{@index}}" title="{{this.name}}">
