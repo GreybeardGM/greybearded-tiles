@@ -12,7 +12,7 @@ Das Modul speichert Setpiece-Slots als Szenen-Flag unter `greybeared-tiles.setpi
 
 ## Funktionen
 
-- Fügt den Tile-Scene-Controls eine Schaltfläche hinzu, die eine Application-V2-Setpiece-Leiste öffnet oder schließt.
+- Fügt den Token-Scene-Controls eine Schaltfläche hinzu, die eine Application-V2-Setpiece-Leiste öffnet oder schließt.
 - Die Setpiece-Leiste ist absolut am oberen mittleren Bildrand positioniert.
 - Gespeicherte Setpieces werden als flexible Thumbnail-Leiste angezeigt.
 - Ein Klick auf ein Thumbnail öffnet den Foundry-FilePicker, um das Bild der verbundenen Tile zu ändern.

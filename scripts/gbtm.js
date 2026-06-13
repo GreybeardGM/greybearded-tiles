@@ -75,35 +75,39 @@ Hooks.once("init", () => {
 });
 
 Hooks.on("getSceneControlButtons", (controls) => {
-  const tileControls = getTileControls(controls);
-  if (!tileControls) return;
+  const tokenControls = getSceneControls(controls, "tokens");
+  const tileControls = getSceneControls(controls, "tiles");
 
-  addTool(tileControls, {
-    name: "gbtm-toggle-setpieces",
-    title: "GBTM: Setpiece-Leiste öffnen/schließen",
-    icon: "fa-solid fa-images",
-    button: true,
-    visible: game.user.isGM,
-    onChange: (_event, active) => toggleSetpieceBar(active)
-  });
+  if (tokenControls) {
+    addTool(tokenControls, {
+      name: "gbtm-toggle-setpieces",
+      title: "GBTM: Setpiece-Leiste öffnen/schließen",
+      icon: "fa-solid fa-images",
+      button: true,
+      visible: game.user.isGM,
+      onChange: (_event, active) => toggleSetpieceBar(active)
+    });
+  }
 
-  addTool(tileControls, {
-    name: "gbtm-create-setpiece-slot",
-    title: "GBTM: Setpiece-Slot aus ausgewählter Tile anlegen",
-    icon: "fa-solid fa-square-plus",
-    button: true,
-    visible: game.user.isGM,
-    onChange: () => createSetpieceFromControlledTile()
-  });
+  if (tileControls) {
+    addTool(tileControls, {
+      name: "gbtm-create-setpiece-slot",
+      title: "GBTM: Setpiece-Slot aus ausgewählter Tile anlegen",
+      icon: "fa-solid fa-square-plus",
+      button: true,
+      visible: game.user.isGM,
+      onChange: () => createSetpieceFromControlledTile()
+    });
+  }
 });
 
 Hooks.on("updateScene", (scene) => {
   if (scene.id === canvas.scene?.id && setpieceBar?.rendered) setpieceBar.render({ force: true });
 });
 
-function getTileControls(controls) {
-  if (Array.isArray(controls)) return controls.find((control) => control.name === "tiles");
-  return controls?.tiles;
+function getSceneControls(controls, name) {
+  if (Array.isArray(controls)) return controls.find((control) => control.name === name);
+  return controls?.[name];
 }
 
 function addTool(control, tool) {
