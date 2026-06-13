@@ -1,20 +1,34 @@
 <section class="gbtm-setpiece-bar" aria-label="Greybeared Theater of the Mind Setpieces">
   {{#if setpieces.length}}
-    <div class="gbtm-setpiece-actions">
-      <button type="button" class="gbtm-clear-setpieces" title="Alle Setpieces aus dieser Szene entfernen">
-        <i class="fa-solid fa-trash" aria-hidden="true"></i>
-        <span>Liste leeren</span>
-      </button>
-    </div>
-    <div class="gbtm-setpiece-list">
-      {{#each setpieces}}
-        <button type="button" class="gbtm-setpiece" data-index="{{@index}}" title="{{this.name}}">
-          <img src="{{this.src}}" alt="{{this.name}}" loading="lazy">
-          <span>{{this.name}}</span>
+    <div class="gbtm-setpiece-row">
+      <div class="gbtm-setpiece-list">
+        {{#each setpieces}}
+          <button type="button" class="gbtm-setpiece" data-index="{{@index}}" title="{{this.name}}">
+            <img src="{{this.src}}" alt="{{this.name}}" loading="lazy">
+            <span>{{this.name}}</span>
+          </button>
+        {{/each}}
+      </div>
+      <div class="gbtm-setpiece-actions" aria-label="Setpiece-Aktionen">
+        <button type="button" class="gbtm-close-setpieces" title="Setpiece-Leiste schließen">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          <span>Schließen</span>
         </button>
-      {{/each}}
+        <button type="button" class="gbtm-clear-setpieces" title="Alle Setpieces aus dieser Szene entfernen">
+          <i class="fa-solid fa-trash" aria-hidden="true"></i>
+          <span>Liste leeren</span>
+        </button>
+      </div>
     </div>
   {{else}}
-    <p class="gbtm-empty">Keine Setpieces gespeichert. Wähle eine Tile aus und nutze „Setpiece-Slot anlegen“.</p>
+    <div class="gbtm-setpiece-row">
+      <p class="gbtm-empty">Keine Setpieces gespeichert. Wähle eine Tile aus und nutze „Setpiece-Slot anlegen“.</p>
+      <div class="gbtm-setpiece-actions" aria-label="Setpiece-Aktionen">
+        <button type="button" class="gbtm-close-setpieces" title="Setpiece-Leiste schließen">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          <span>Schließen</span>
+        </button>
+      </div>
+    </div>
   {{/if}}
 </section>
