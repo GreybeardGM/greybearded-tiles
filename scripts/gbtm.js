@@ -2,6 +2,7 @@ const MODULE_ID = "greybeared-tiles";
 const FLAG_SETPIECES = "setpieces";
 const DEFAULT_FILE_SOURCE = "data";
 const DEFAULT_START_PATH = "assets/artworks";
+const DEFAULT_SETPIECE_ICON = "icons/svg/mystery-man.svg";
 
 let setpieceBar;
 
@@ -38,7 +39,7 @@ class GBTMSetpieceBar extends foundry.applications.api.HandlebarsApplicationMixi
       setpieces: getSetpieces().map((setpiece, index) => ({
         ...setpiece,
         name: setpiece.name || `Setpiece ${index + 1}`,
-        src: setpiece.src || "icons/svg/mystery-man.svg"
+        src: setpiece.src || DEFAULT_SETPIECE_ICON
       }))
     };
   }
@@ -128,19 +129,58 @@ async function createSetpieceFromControlledTile() {
     return;
   }
 
+  const fallbackName = document.name || `Setpiece ${setpieces.length + 1}`;
+  const name = await promptSetpieceName(fallbackName);
+  if (!name) return;
+
   const src = document.texture?.src || "";
   setpieces.push({
     tileId: document.id,
     tileUuid: document.uuid,
     sceneId: canvas.scene.id,
-    name: document.name || `Setpiece ${setpieces.length + 1}`,
+    name,
     src,
     source: DEFAULT_FILE_SOURCE
   });
 
   await canvas.scene.setFlag(MODULE_ID, FLAG_SETPIECES, setpieces);
-  ui.notifications.info(`Setpiece-Slot angelegt: ${document.name || document.id}`);
+  ui.notifications.info(`Setpiece-Slot angelegt: ${name}`);
   if (setpieceBar?.rendered) setpieceBar.render({ force: true });
+}
+
+async function promptSetpieceName(defaultName) {
+  const data = await foundry.applications.api.DialogV2.input({
+    window: { title: "Setpiece benennen" },
+    content: `
+      <div class="form-group">
+        <label for="gbtm-setpiece-name">Name</label>
+        <input id="gbtm-setpiece-name" type="text" name="name" value="${gbtmEscapeAttribute(defaultName)}" autofocus>
+      </div>
+    `,
+    ok: {
+      label: "Speichern",
+      icon: "fa-solid fa-floppy-disk"
+    },
+    rejectClose: false
+  });
+
+  if (!data) return null;
+
+  const name = data.name?.trim();
+  if (!name) {
+    ui.notifications.warn("Bitte einen Namen für das Setpiece eingeben.");
+    return null;
+  }
+
+  return name;
+}
+
+function gbtmEscapeAttribute(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
 }
 
 function getSetpieces() {
