@@ -1,7 +1,7 @@
 {
   "id": "greybeared-tiles",
-  "title": "Greybeared Theater of the Mind",
-  "description": "Scene controls for managing Theater of the Mind tile setpieces from a centered thumbnail flex bar.",
+  "title": "Greybearded Tile Manager",
+  "description": "Scene controls for managing tile setpieces and optional automatic vertical tile sorting.",
   "version": "0.1.0",
   "authors": [
     {

@@ -4,7 +4,7 @@ Diese Vorgaben gelten für das gesamte Foundry-VTT-Modul in diesem Repository.
 
 ## Modulidentität und Namenskonventionen
 
-- Modulname: **Greybeared Theater of the Mind**.
+- Modulname: **Greybearded Tile Manager**.
 - Modul-ID: `greybeared-tiles`.
 - Öffentlicher Kurzname / Namespace: `GBTM`.
 - Verwende `greybeared-tiles` als Foundry-Modul-ID und als Namespace für Flags, Settings und Modulressourcen.

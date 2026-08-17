@@ -1,5 +1,6 @@
 const MODULE_ID = "greybeared-tiles";
 const FLAG_SETPIECES = "setpieces";
+const FLAG_AUTO_TILE_SORT = "autoTileSort";
 const DEFAULT_FILE_SOURCE = "data";
 const DEFAULT_START_PATH = "assets/artworks";
 const DEFAULT_SETPIECE_ICON = "icons/svg/mystery-man.svg";
@@ -11,7 +12,7 @@ class GBTMSetpieceBar extends foundry.applications.api.HandlebarsApplicationMixi
     id: "gbtm-setpiece-bar",
     classes: ["gbtm-setpiece-app"],
     window: {
-      title: "Greybeared Theater of the Mind",
+      title: "Greybearded Tile Manager",
       frame: true,
       positioned: false
     },
@@ -74,7 +75,7 @@ class GBTMSetpieceBar extends foundry.applications.api.HandlebarsApplicationMixi
 }
 
 Hooks.once("init", () => {
-  console.log(`${MODULE_ID} | Initializing Greybeared Theater of the Mind`);
+  console.log(`${MODULE_ID} | Initializing Greybearded Tile Manager`);
 });
 
 Hooks.on("getSceneControlButtons", (controls) => {
@@ -99,6 +100,26 @@ Hooks.on("getSceneControlButtons", (controls) => {
     visible: game.user.isGM,
     onChange: () => createSetpieceFromControlledTile()
   };
+  tileTools.gbtmAutoTileSort = {
+    name: "gbtmAutoTileSort",
+    title: "GBTM: Tiles automatisch nach ihrer vertikalen Position sortieren",
+    icon: "fa-solid fa-arrow-down-short-wide",
+    order: Object.keys(tileTools).length + 1,
+    toggle: true,
+    active: isAutomaticTileSortingEnabled(canvas.scene),
+    visible: game.user.isGM,
+    onChange: (_event, active) => toggleAutomaticTileSorting(active)
+  };
+});
+
+Hooks.on("preCreateTile", (tile, data) => {
+  if (!isAutomaticTileSortingEnabled(tile.parent)) return;
+  tile.updateSource({ sort: getAutomaticTileSortValue(tile, data) });
+});
+
+Hooks.on("preUpdateTile", (tile, changes) => {
+  if (!isAutomaticTileSortingEnabled(tile.parent) || !hasTileGeometryChange(changes)) return;
+  changes.sort = getAutomaticTileSortValue(tile, changes);
 });
 
 Hooks.on("updateScene", (scene) => {
@@ -110,6 +131,45 @@ function toggleSetpieceBar(active) {
   if (setpieceBar.rendered && active === false) return setpieceBar.close();
   if (setpieceBar.rendered) return setpieceBar.close();
   return setpieceBar.render(true);
+}
+
+function isAutomaticTileSortingEnabled(scene) {
+  return scene?.getFlag(MODULE_ID, FLAG_AUTO_TILE_SORT) === true;
+}
+
+function hasTileGeometryChange(changes) {
+  return ["y", "height"].some((property) => foundry.utils.hasProperty(changes, property));
+}
+
+function getAutomaticTileSortValue(tile, changes = {}) {
+  const y = Number(foundry.utils.getProperty(changes, "y") ?? tile.y ?? 0);
+  const height = Number(foundry.utils.getProperty(changes, "height") ?? tile.height ?? 0);
+  return Math.round(y + Math.abs(height));
+}
+
+async function toggleAutomaticTileSorting(active) {
+  const scene = canvas.scene;
+  if (!scene) return;
+
+  if (!active) {
+    await scene.unsetFlag(MODULE_ID, FLAG_AUTO_TILE_SORT);
+    return ui.notifications.info("Automatische Tile-Sortierung für diese Szene deaktiviert.");
+  }
+
+  await scene.setFlag(MODULE_ID, FLAG_AUTO_TILE_SORT, true);
+  const updatedTiles = await sortSceneTiles(scene);
+  ui.notifications.info(`Automatische Tile-Sortierung aktiviert; ${updatedTiles} Tiles sortiert.`);
+}
+
+async function sortSceneTiles(scene) {
+  const updates = scene.tiles.reduce((result, tile) => {
+    const sort = getAutomaticTileSortValue(tile);
+    if (tile.sort !== sort) result.push({ _id: tile.id, sort });
+    return result;
+  }, []);
+
+  if (updates.length) await scene.updateEmbeddedDocuments("Tile", updates);
+  return updates.length;
 }
 
 async function createSetpieceFromControlledTile() {
