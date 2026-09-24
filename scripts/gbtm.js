@@ -4,8 +4,10 @@ const FLAG_AUTO_TILE_SORT = "autoTileSort";
 const DEFAULT_FILE_SOURCE = "data";
 const DEFAULT_START_PATH = "assets/artworks";
 const DEFAULT_SETPIECE_ICON = "icons/svg/mystery-man.svg";
+const FILE_PICKER_TYPE = "filePicker";
 
 let setpieceBar;
+let setpieceConfig;
 
 class GBTMSetpieceBar extends foundry.applications.api.HandlebarsApplicationMixin(foundry.applications.api.ApplicationV2) {
   static DEFAULT_OPTIONS = {
@@ -52,6 +54,7 @@ class GBTMSetpieceBar extends foundry.applications.api.HandlebarsApplicationMixi
     });
     this.element.querySelector(".gbtm-close-setpieces")?.addEventListener("click", () => this.close());
     this.element.querySelector(".gbtm-clear-setpieces")?.addEventListener("click", () => clearSetpieces());
+    this.element.querySelector(".gbtm-config-setpieces")?.addEventListener("click", () => openSetpieceConfig());
   }
 
   static async #chooseSetpiece(event, target) {
@@ -61,6 +64,7 @@ class GBTMSetpieceBar extends foundry.applications.api.HandlebarsApplicationMixi
     const setpieces = getSetpieces();
     const setpiece = setpieces[index];
     if (!setpiece) return;
+    if ((setpiece.type || FILE_PICKER_TYPE) !== FILE_PICKER_TYPE) return;
 
     const current = setpiece.src || DEFAULT_START_PATH;
     new FilePicker({
@@ -71,6 +75,83 @@ class GBTMSetpieceBar extends foundry.applications.api.HandlebarsApplicationMixi
         await updateSetpiecePath(index, path);
       }
     }).render(true);
+  }
+}
+
+class GBTMSetpieceConfig extends foundry.applications.api.HandlebarsApplicationMixin(foundry.applications.api.ApplicationV2) {
+  static DEFAULT_OPTIONS = {
+    id: "gbtm-setpiece-config",
+    classes: ["gbtm-setpiece-config-app"],
+    window: { title: "Setpieces konfigurieren", resizable: true },
+    position: { width: 760, height: "auto" }
+  };
+
+  static PARTS = {
+    main: { template: `modules/${MODULE_ID}/templates/setpiece-config.hbs` }
+  };
+
+  constructor(scene) {
+    super();
+    this.scene = scene;
+  }
+
+  async _prepareContext(options) {
+    const context = await super._prepareContext(options);
+    const setpieces = getSetpieces(this.scene);
+    this.setpieceIds = setpieces.map((setpiece) => setpiece.tileId);
+    return {
+      ...context,
+      setpieces: setpieces.map((setpiece, index) => ({
+        ...setpiece,
+        name: setpiece.name || `Setpiece ${index + 1}`,
+        src: setpiece.src || DEFAULT_SETPIECE_ICON,
+        type: setpiece.type || FILE_PICKER_TYPE
+      }))
+    };
+  }
+
+  _onRender(context, options) {
+    super._onRender(context, options);
+    this.element.querySelector(".gbtm-config-form")?.addEventListener("submit", (event) => this._save(event));
+    this.element.querySelector(".gbtm-config-cancel")?.addEventListener("click", () => this.close());
+  }
+
+  async _save(event) {
+    event.preventDefault();
+    if (this.saving) return;
+    if (canvas.scene?.id !== this.scene.id) {
+      ui.notifications.warn("Die Szene hat sich geändert. Bitte die Konfiguration erneut öffnen.");
+      return;
+    }
+
+    const setpieces = getSetpieces(this.scene);
+    if (setpieces.length !== this.setpieceIds.length ||
+        setpieces.some((setpiece, index) => setpiece.tileId !== this.setpieceIds[index])) {
+      ui.notifications.warn("Die Setpiece-Liste hat sich geändert. Bitte die Konfiguration erneut öffnen.");
+      return;
+    }
+
+    const form = event.currentTarget;
+    for (const [index, setpiece] of setpieces.entries()) {
+      const nameInput = form.elements.namedItem(`name-${index}`);
+      const typeInput = form.elements.namedItem(`type-${index}`);
+      const name = nameInput.value.trim();
+      if (!name) {
+        ui.notifications.warn("Bitte für jedes Setpiece einen Namen eingeben.");
+        nameInput.focus();
+        return;
+      }
+      setpiece.name = name;
+      setpiece.type = typeInput.value;
+    }
+
+    this.saving = true;
+    try {
+      await this.scene.setFlag(MODULE_ID, FLAG_SETPIECES, setpieces);
+      await this.close();
+    } finally {
+      this.saving = false;
+    }
   }
 }
 
@@ -131,6 +212,12 @@ function toggleSetpieceBar(active) {
   if (setpieceBar.rendered && active === false) return setpieceBar.close();
   if (setpieceBar.rendered) return setpieceBar.close();
   return setpieceBar.render(true);
+}
+
+function openSetpieceConfig() {
+  if (!canvas.scene || setpieceConfig?.rendered) return;
+  setpieceConfig = new GBTMSetpieceConfig(canvas.scene);
+  return setpieceConfig.render(true);
 }
 
 function isAutomaticTileSortingEnabled(scene) {
@@ -199,6 +286,7 @@ async function createSetpieceFromControlledTile() {
     tileUuid: document.uuid,
     sceneId: canvas.scene.id,
     name,
+    type: FILE_PICKER_TYPE,
     src,
     source: DEFAULT_FILE_SOURCE
   });
@@ -243,8 +331,8 @@ function gbtmEscapeAttribute(value) {
     .replaceAll(">", "&gt;");
 }
 
-function getSetpieces() {
-  return foundry.utils.deepClone(canvas.scene?.getFlag(MODULE_ID, FLAG_SETPIECES) ?? []);
+function getSetpieces(scene = canvas.scene) {
+  return foundry.utils.deepClone(scene?.getFlag(MODULE_ID, FLAG_SETPIECES) ?? []);
 }
 
 async function clearSetpieces() {
