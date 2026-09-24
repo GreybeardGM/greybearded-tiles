@@ -16,6 +16,7 @@ Das Modul speichert Setpiece-Slots als Szenen-Flag unter `greybeared-tiles.setpi
 - Die Setpiece-Leiste ist absolut am oberen mittleren Bildrand positioniert.
 - Gespeicherte Setpieces werden als flexible Thumbnail-Leiste angezeigt.
 - Ein Klick auf ein Thumbnail öffnet den Foundry-FilePicker, um das Bild der verbundenen Tile zu ändern.
+- Über „Config“ lassen sich die Setpieces einer Szene nebeneinander anzeigen und ihre Namen ändern. Die Namen erscheinen in der Leiste; das Typ-Dropdown bietet derzeit „File Picker“.
 - Eine zweite Schaltfläche in den Tile-Controls legt aus der aktuell ausgewählten Tile einen neuen Setpiece-Slot für die Szene an.
 - Ein Toggle in den Tile-Controls aktiviert die automatische Sortierung für die aktuelle Szene und sortiert vorhandene Tiles sofort anhand ihrer unteren Kante.
 - Solange der Toggle aktiv ist, wird der Sortierwert neuer, verschobener oder skalierter Tiles automatisch aktualisiert.

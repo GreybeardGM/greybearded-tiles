@@ -30,7 +30,8 @@
 }
 
 .gbtm-close-setpieces,
-.gbtm-clear-setpieces {
+.gbtm-clear-setpieces,
+.gbtm-config-setpieces {
   border: 1px solid rgba(255, 255, 255, 0.25);
   color: var(--color-text-light-highlight, #f0f0e0);
   font-size: 11px;
@@ -39,7 +40,9 @@
 .gbtm-close-setpieces:hover,
 .gbtm-close-setpieces:focus-visible,
 .gbtm-clear-setpieces:hover,
-.gbtm-clear-setpieces:focus-visible {
+.gbtm-clear-setpieces:focus-visible,
+.gbtm-config-setpieces:hover,
+.gbtm-config-setpieces:focus-visible {
   border-color: var(--color-border-highlight, #ff6400);
   box-shadow: 0 0 6px var(--color-shadow-highlight, #ff6400);
 }
@@ -92,4 +95,50 @@
   padding: 4px 8px;
   color: var(--color-text-light-highlight, #f0f0e0);
   font-size: 12px;
+}
+
+.gbtm-setpiece-config-app .window-content {
+  padding: 8px;
+}
+
+.gbtm-config-list {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.gbtm-config-setpiece {
+  display: flex;
+  flex: 0 0 142px;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+}
+
+.gbtm-config-setpiece img {
+  width: 100%;
+  height: 74px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.gbtm-config-setpiece label {
+  font-size: 11px;
+}
+
+.gbtm-config-setpiece input,
+.gbtm-config-setpiece select {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+
+.gbtm-config-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding-top: 8px;
 }

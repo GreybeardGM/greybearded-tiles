@@ -1,0 +1,25 @@
+<form class="gbtm-config-form">
+  {{#if setpieces.length}}
+    <div class="gbtm-config-list">
+      {{#each setpieces}}
+        <div class="gbtm-config-setpiece">
+          <img src="{{this.src}}" alt="Vorschau: {{this.name}}" loading="lazy">
+          <label for="gbtm-name-{{@index}}">Name</label>
+          <input id="gbtm-name-{{@index}}" name="name-{{@index}}" type="text" value="{{this.name}}" required>
+          <label for="gbtm-type-{{@index}}">Typ</label>
+          <select id="gbtm-type-{{@index}}" name="type-{{@index}}">
+            <option value="filePicker">File Picker</option>
+          </select>
+        </div>
+      {{/each}}
+    </div>
+  {{else}}
+    <p class="gbtm-empty">Keine Setpieces in dieser Szene.</p>
+  {{/if}}
+  <footer class="gbtm-config-actions">
+    <button type="button" class="gbtm-config-cancel">Abbrechen</button>
+    {{#if setpieces.length}}
+      <button type="submit"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Speichern</button>
+    {{/if}}
+  </footer>
+</form>
