@@ -142,3 +142,55 @@
   gap: 6px;
   padding-top: 8px;
 }
+
+.gbtm-smart-picker-app .window-content {
+  padding: 8px;
+}
+
+.gbtm-smart-heading {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.gbtm-smart-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: min(60vh, 520px);
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.gbtm-smart-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 68px;
+  text-align: left;
+}
+
+.gbtm-smart-file img {
+  width: 96px;
+  height: 60px;
+  flex: 0 0 96px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.gbtm-smart-file span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gbtm-smart-file.is-current {
+  border-color: var(--color-border-highlight, #ff6400);
+}
+
+.gbtm-smart-more,
+.gbtm-smart-less {
+  width: 100%;
+  margin-top: 8px;
+}

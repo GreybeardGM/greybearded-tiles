@@ -5,9 +5,13 @@ const DEFAULT_FILE_SOURCE = "data";
 const DEFAULT_START_PATH = "assets/artworks";
 const DEFAULT_SETPIECE_ICON = "icons/svg/mystery-man.svg";
 const FILE_PICKER_TYPE = "filePicker";
+const SMART_PICKER_TYPE = "smartPicker";
+const IMAGE_EXTENSIONS = [".apng", ".avif", ".bmp", ".gif", ".jpeg", ".jpg", ".png", ".svg", ".tiff", ".webp"];
 
 let setpieceBar;
 let setpieceConfig;
+let smartPicker;
+let smartPickerOpening = false;
 
 class GBTMSetpieceBar extends foundry.applications.api.HandlebarsApplicationMixin(foundry.applications.api.ApplicationV2) {
   static DEFAULT_OPTIONS = {
@@ -64,17 +68,90 @@ class GBTMSetpieceBar extends foundry.applications.api.HandlebarsApplicationMixi
     const setpieces = getSetpieces();
     const setpiece = setpieces[index];
     if (!setpiece) return;
-    if ((setpiece.type || FILE_PICKER_TYPE) !== FILE_PICKER_TYPE) return;
+    if (setpiece.type === SMART_PICKER_TYPE) return openSmartPicker(index, setpiece);
 
-    const current = setpiece.src || DEFAULT_START_PATH;
+    const sceneId = canvas.scene?.id;
     new FilePicker({
       type: "image",
       source: setpiece.source || DEFAULT_FILE_SOURCE,
-      current,
+      current: setpiece.src || DEFAULT_START_PATH,
       callback: async (path) => {
-        await updateSetpiecePath(index, path);
+        await updateSetpiecePath(index, path, setpiece.tileId, sceneId);
       }
     }).render(true);
+  }
+}
+
+class GBTMSmartPicker extends foundry.applications.api.HandlebarsApplicationMixin(foundry.applications.api.ApplicationV2) {
+  static DEFAULT_OPTIONS = {
+    id: "gbtm-smart-picker",
+    classes: ["gbtm-smart-picker-app"],
+    window: { title: "SmartPicker", resizable: true },
+    position: { width: 440, height: "auto" }
+  };
+
+  static PARTS = {
+    main: { template: `modules/${MODULE_ID}/templates/smart-picker.hbs` }
+  };
+
+  constructor(index, setpiece, scene, files) {
+    super();
+    this.index = index;
+    this.tileId = setpiece.tileId;
+    this.sceneId = scene.id;
+    this.name = setpiece.name || `Setpiece ${index + 1}`;
+    this.current = setpiece.src;
+    this.group = gbtmFirstWord(setpiece.src);
+    this.files = files;
+    this.showAll = false;
+  }
+
+  async _prepareContext(options) {
+    const context = await super._prepareContext(options);
+    const matches = this.files.map((path, index) => ({
+      path,
+      index,
+      name: gbtmFilename(path),
+      current: path === this.current
+    })).filter((file) => this.showAll || gbtmFirstWord(file.path).toLocaleLowerCase() === this.group.toLocaleLowerCase());
+
+    return {
+      ...context,
+      name: this.name,
+      group: this.group || "aktuellem Bild",
+      files: matches,
+      showAll: this.showAll,
+      hasFiles: this.files.length > 0
+    };
+  }
+
+  _onRender(context, options) {
+    super._onRender(context, options);
+    this.element.querySelectorAll(".gbtm-smart-file").forEach((button) => {
+      button.addEventListener("click", () => this._selectFile(button));
+    });
+    this.element.querySelector(".gbtm-smart-more")?.addEventListener("click", () => {
+      this.showAll = true;
+      this.render({ force: true });
+    });
+    this.element.querySelector(".gbtm-smart-less")?.addEventListener("click", () => {
+      this.showAll = false;
+      this.render({ force: true });
+    });
+  }
+
+  async _selectFile(button) {
+    if (this.saving) return;
+    const path = this.files[Number(button.dataset.index)];
+    if (!path) return;
+    if (path === this.current) return this.close();
+
+    this.saving = true;
+    try {
+      if (await updateSetpiecePath(this.index, path, this.tileId, this.sceneId)) await this.close();
+    } finally {
+      this.saving = false;
+    }
   }
 }
 
@@ -105,7 +182,8 @@ class GBTMSetpieceConfig extends foundry.applications.api.HandlebarsApplicationM
         ...setpiece,
         name: setpiece.name || `Setpiece ${index + 1}`,
         src: setpiece.src || DEFAULT_SETPIECE_ICON,
-        type: setpiece.type || FILE_PICKER_TYPE
+        filePickerSelected: !setpiece.type || setpiece.type === FILE_PICKER_TYPE,
+        smartPickerSelected: setpiece.type === SMART_PICKER_TYPE
       }))
     };
   }
@@ -218,6 +296,51 @@ function openSetpieceConfig() {
   if (!canvas.scene || setpieceConfig?.rendered) return;
   setpieceConfig = new GBTMSetpieceConfig(canvas.scene);
   return setpieceConfig.render(true);
+}
+
+async function openSmartPicker(index, setpiece) {
+  if (smartPickerOpening || !canvas.scene) return;
+  smartPickerOpening = true;
+  const scene = canvas.scene;
+  try {
+    const directory = gbtmDirectory(setpiece.src);
+    const result = await foundry.applications.apps.FilePicker.implementation.browse(
+      setpiece.source || DEFAULT_FILE_SOURCE, directory,
+      { extensions: IMAGE_EXTENSIONS, ...(setpiece.bucket ? { bucket: setpiece.bucket } : {}) }
+    );
+    if (canvas.scene?.id !== scene.id) return;
+    const files = (result.files ?? []).filter((path) => IMAGE_EXTENSIONS.some((ext) =>
+      gbtmCleanPath(path).toLocaleLowerCase().endsWith(ext)
+    )).sort((a, b) => gbtmFilename(a).localeCompare(gbtmFilename(b), undefined, { numeric: true }));
+    if (smartPicker?.rendered) await smartPicker.close();
+    smartPicker = new GBTMSmartPicker(index, setpiece, scene, files);
+    await smartPicker.render(true);
+  } catch (error) {
+    console.error(`${MODULE_ID} | SmartPicker konnte den Ordner nicht lesen`, error);
+    ui.notifications.error("SmartPicker konnte den Bildordner nicht lesen.");
+  } finally {
+    smartPickerOpening = false;
+  }
+}
+
+function gbtmCleanPath(path) {
+  return String(path ?? "").split(/[?#]/u, 1)[0];
+}
+
+function gbtmDirectory(path) {
+  const clean = gbtmCleanPath(path);
+  const lastSlash = clean.lastIndexOf("/");
+  return lastSlash < 0 ? "" : clean.slice(0, lastSlash);
+}
+
+function gbtmFilename(path) {
+  const name = gbtmCleanPath(path).split("/").at(-1) || "";
+  try { return decodeURIComponent(name); }
+  catch { return name; }
+}
+
+function gbtmFirstWord(path) {
+  return gbtmFilename(path).replace(/\.[^.]+$/u, "").trim().split(/[\s_-]+/u, 1)[0];
 }
 
 function isAutomaticTileSortingEnabled(scene) {
@@ -341,14 +464,19 @@ async function clearSetpieces() {
   if (setpieceBar?.rendered) setpieceBar.render({ force: true });
 }
 
-async function updateSetpiecePath(index, path) {
+async function updateSetpiecePath(index, path, tileId, sceneId) {
+  if (canvas.scene?.id !== sceneId) return false;
   const setpieces = getSetpieces();
   const setpiece = setpieces[index];
-  if (!setpiece) return;
+  if (!setpiece || setpiece.tileId !== tileId) {
+    ui.notifications.warn("Die Setpiece-Liste hat sich geändert. Bitte die Auswahl erneut öffnen.");
+    return false;
+  }
 
   const tile = canvas.scene.tiles.get(setpiece.tileId);
   if (!tile) {
-    return ui.notifications.error(`Tile nicht gefunden: ${setpiece.tileId}`);
+    ui.notifications.error(`Tile nicht gefunden: ${setpiece.tileId}`);
+    return false;
   }
 
   await tile.update({ "texture.src": path });
@@ -356,4 +484,5 @@ async function updateSetpiecePath(index, path) {
   await canvas.scene.setFlag(MODULE_ID, FLAG_SETPIECES, setpieces);
   ui.notifications.info(`Setpiece gewechselt: ${path}`);
   if (setpieceBar?.rendered) setpieceBar.render({ force: true });
+  return true;
 }

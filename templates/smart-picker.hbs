@@ -1,0 +1,21 @@
+<section class="gbtm-smart-picker" aria-label="Bildvarianten für {{name}}">
+  <p class="gbtm-smart-heading">{{#if showAll}}Alle Bilder im Ordner{{else}}Varianten: {{group}}{{/if}}</p>
+  {{#if files.length}}
+    <div class="gbtm-smart-list">
+      {{#each files}}
+        <button type="button" class="gbtm-smart-file {{#if this.current}}is-current{{/if}}"
+                data-index="{{this.index}}" title="{{this.name}}" aria-current="{{this.current}}">
+          <img src="{{this.path}}" alt="" loading="lazy">
+          <span>{{this.name}}</span>
+        </button>
+      {{/each}}
+    </div>
+  {{else}}
+    <p class="gbtm-empty">{{#if hasFiles}}Keine passenden Varianten gefunden.{{else}}Keine Bilder in diesem Ordner.{{/if}}</p>
+  {{/if}}
+  {{#if showAll}}
+    <button type="button" class="gbtm-smart-less">Weniger anzeigen</button>
+  {{else}}
+    <button type="button" class="gbtm-smart-more">Mehr anzeigen: alle Bilder im Ordner</button>
+  {{/if}}
+</section>
