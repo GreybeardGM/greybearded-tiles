@@ -1,7 +1,6 @@
 const MODULE_ID = "greybeared-tiles";
 const FLAG_SETPIECES = "setpieces";
 const FLAG_AUTO_TILE_SORT = "autoTileSort";
-const DEFAULT_FILE_SOURCE = "data";
 const DEFAULT_START_PATH = "assets/artworks";
 const DEFAULT_SETPIECE_ICON = "icons/svg/mystery-man.svg";
 const FILE_PICKER_TYPE = "filePicker";
@@ -73,7 +72,6 @@ class GBTMSetpieceBar extends foundry.applications.api.HandlebarsApplicationMixi
     const sceneId = canvas.scene?.id;
     new FilePicker({
       type: "image",
-      source: setpiece.source || DEFAULT_FILE_SOURCE,
       current: setpiece.src || DEFAULT_START_PATH,
       callback: async (path) => {
         await updateSetpiecePath(index, path, setpiece.tileId, sceneId);
@@ -303,10 +301,9 @@ async function openSmartPicker(index, setpiece) {
   smartPickerOpening = true;
   const scene = canvas.scene;
   try {
-    const directory = gbtmDirectory(setpiece.src);
+    const { source, directory, bucket } = gbtmFileLocation(setpiece.src);
     const result = await foundry.applications.apps.FilePicker.implementation.browse(
-      setpiece.source || DEFAULT_FILE_SOURCE, directory,
-      { extensions: IMAGE_EXTENSIONS, ...(setpiece.bucket ? { bucket: setpiece.bucket } : {}) }
+      source, directory, { extensions: IMAGE_EXTENSIONS, ...(bucket ? { bucket } : {}) }
     );
     if (canvas.scene?.id !== scene.id) return;
     const files = (result.files ?? []).filter((path) => IMAGE_EXTENSIONS.some((ext) =>
@@ -323,14 +320,23 @@ async function openSmartPicker(index, setpiece) {
   }
 }
 
-function gbtmCleanPath(path) {
-  return String(path ?? "").split(/[?#]/u, 1)[0];
+function gbtmFileLocation(path) {
+  const Picker = foundry.applications.apps.FilePicker.implementation;
+  // Foundry infers the source and bucket from the current image URL, including legacy slots with a stale "data" flag.
+  const picker = new Picker({ type: "image", current: path });
+  const source = picker.activeSource;
+  const directory = picker.target;
+  const bucket = picker.source?.bucket;
+  if (!source || typeof directory !== "string" || /^https?:\/\//iu.test(directory) ||
+      (source === "s3" && !bucket) ||
+      (/^https?:\/\//iu.test(path) && ["data", "public"].includes(source))) {
+    throw new Error(`Speicherort des Bildes kann nicht durchsucht werden: ${path}`);
+  }
+  return { source, directory, bucket };
 }
 
-function gbtmDirectory(path) {
-  const clean = gbtmCleanPath(path);
-  const lastSlash = clean.lastIndexOf("/");
-  return lastSlash < 0 ? "" : clean.slice(0, lastSlash);
+function gbtmCleanPath(path) {
+  return String(path ?? "").split(/[?#]/u, 1)[0];
 }
 
 function gbtmFilename(path) {
@@ -410,8 +416,7 @@ async function createSetpieceFromControlledTile() {
     sceneId: canvas.scene.id,
     name,
     type: FILE_PICKER_TYPE,
-    src,
-    source: DEFAULT_FILE_SOURCE
+    src
   });
 
   await canvas.scene.setFlag(MODULE_ID, FLAG_SETPIECES, setpieces);
@@ -481,6 +486,8 @@ async function updateSetpiecePath(index, path, tileId, sceneId) {
 
   await tile.update({ "texture.src": path });
   setpiece.src = path;
+  delete setpiece.source;
+  delete setpiece.bucket;
   await canvas.scene.setFlag(MODULE_ID, FLAG_SETPIECES, setpieces);
   ui.notifications.info(`Setpiece gewechselt: ${path}`);
   if (setpieceBar?.rendered) setpieceBar.render({ force: true });
