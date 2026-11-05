@@ -8,7 +8,8 @@
           <input id="gbtm-name-{{@index}}" name="name-{{@index}}" type="text" value="{{this.name}}" required>
           <label for="gbtm-type-{{@index}}">Typ</label>
           <select id="gbtm-type-{{@index}}" name="type-{{@index}}">
-            <option value="filePicker">File Picker</option>
+            <option value="filePicker" {{#if this.filePickerSelected}}selected{{/if}}>File Picker</option>
+            <option value="smartPicker" {{#if this.smartPickerSelected}}selected{{/if}}>SmartPicker</option>
           </select>
         </div>
       {{/each}}
